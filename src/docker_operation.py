@@ -14,11 +14,12 @@ operator = ''
 
 def read_config():
     if len(sys.argv) < 4:
+        print sys.argv
         print 'Missing required parameters. task, conf folder and operation'
         exit(1)
     
     global task_name, operator
-    task_name, config_folder, operator = sys.argv[1], sys.argv[2], sys.argv[3]
+    config_folder, task_name, operator = sys.argv[1], sys.argv[2], sys.argv[3]
     config_file = os.path.dirname(os.path.abspath(__file__)) + os.sep + config_folder + os.sep + 'config.properties'
     print 'task:{}, config file:{}'.format(task_name, config_file)
     
