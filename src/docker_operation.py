@@ -32,7 +32,7 @@ def read_config():
     return task_conf
 
 def validate_config(task_conf):
-    if operator not in ['start', 'stop', 'create', 'delete', 'update']:
+    if operator not in ['start', 'stop', 'create', 'delete', 'update', 'restart']:
         print "unsupported operator [%s]. start/stop/create/delete/update" %(operator)
         exit(1)
     
@@ -114,6 +114,10 @@ def stop():
         docker_operation.stop_container(container)
     else:
         raise Exception('Not found container %s' %(container_name))
+
+def restart():
+    stop()
+    start()
 
 if __name__ == '__main__':
     task_conf = read_config()
