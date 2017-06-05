@@ -6,7 +6,7 @@ sh docker_operation.sh -f demo -t tomcat -c delete,create
 ------------------------------------
 -f configuration folder
 -t operation task name: tomcat.container.name=tomcat-123456
--c command: start/stop/update/delete/create
+-c command: /create/delete/update/start/stop/restart/
 
 ------------------------------------
 Docker Rest API
