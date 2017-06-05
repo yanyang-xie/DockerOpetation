@@ -11,8 +11,17 @@ class DockerOperation():
     def __init__(self, base_url, version='1.24', timeout=3):
         self.client = docker.DockerClient(base_url=base_url, version=version, timeout=timeout,)
         
-    def get_image_list(self, name=None, all=False, filters=None):
-        return self.client.images.list(name, all, filters)
+    def get_image_list(self, name=None, filters=None):
+        return self.client.images.list(name, filters=filters)
+    
+    def pull_image(self, name, auth_config={}):
+        try:
+            image = self.client.images.get(name)
+            print 'Found image %s in local, need not pull from remote. Image info:%s' %(name, image)
+        except:
+            print 'Pull image %s from remote with auth_config %s.' %(name, auth_config)
+            image = self.client.images.pull(name, auth_config=auth_config)
+            print 'Pull image %s from remote with auth_config %s, succeed. Image info:%s' %(name, auth_config, image)
     
     def get_container_list(self, all=True, before=None, filters=None, limit=-1, since=None):
         return self.client.containers.list(all, before, filters, limit, since)
@@ -35,10 +44,12 @@ class DockerOperation():
         except:
             return False
     
-    def create_container(self, docker_image, detach=True, container_name=None, ports={}, volumes={}, cpu_shares=1024, mem_limit='1g', **kwargs):
+    def create_container(self, docker_image, command=None, detach=True, container_name=None, ports={}, volumes={}, cpu_shares=1024, mem_limit='1g', auth_config={}, **kwargs):
+        self.pull_image(docker_image, auth_config=auth_config)
+        
         # cpu_shares: CPU shares (relative weight). 1024 is 1 core CPU
         # mem_limit(str or int) : Memory limit. Accepts float values or a string with a units identification char (100000b, 1000k, 128m, 1g). If a string is specified without a units character, bytes are assumed as an intended unit.
-        return self.client.containers.run(docker_image, detach=detach, name=container_name, ports=ports, volumes=volumes, cpu_shares=cpu_shares, mem_limit=mem_limit, **kwargs)
+        return self.client.containers.run(docker_image, command=command, detach=detach, name=container_name, ports=ports, volumes=volumes, cpu_shares=cpu_shares, mem_limit=mem_limit, **kwargs)
     
     def delete_container(self, container):
         container.remove()
@@ -69,16 +80,15 @@ if __name__ == '__main__':
     container_name = 'tomcat-123456'
     container_ports={'8080/tcp': 8090} #8080 is container ip, 8090 is node ip which can be access by user
     container_volumes={'/root/test/logs': {'bind': '/root/tomcat/logs', 'mode': 'rw'},}
+    auth_config = {}
     
     if docker_operation.exist_container(container_name):
         container = docker_operation.get_container_by_name(container_name)
-        print container.name
-        
         docker_operation.stop_container(container)
         docker_operation.delete_container(container)
     
     try:
-        container = docker_operation.create_container(docker_image, container_name=container_name, ports=container_ports, volumes=container_volumes, cpu_shares=512, mem_limit='2g')
+        container = docker_operation.create_container(docker_image, container_name=container_name, ports=container_ports, volumes=container_volumes, cpu_shares=512, mem_limit='2g', auth_config=auth_config)
         print container.id, container.name, container.status, container.attrs
     except:
         import traceback

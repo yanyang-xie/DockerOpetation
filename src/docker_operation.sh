@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# cmds is operation list which is defined in vex_operation.py
+# cmds is operation list which is defined in docker_operation.py
 cmds=""
 config_folder=""
 task_name=""
@@ -8,7 +8,7 @@ sleep_time=5
 
 operation_file="`(cd "$(dirname "$0")"; pwd)`/docker_operation.py"
 if [ ! -f $operation_file ]; then
-    echo "Not found the operation scipt ${operation_file}"
+    echo "Not found the operation script ${operation_file}"
     exit 1
 fi
 
