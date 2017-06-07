@@ -5,9 +5,12 @@ docker_operation.py will parse the configuration file and use docker library to 
 
 Supports
 - image
+- container name
 - ports
 - volumes
 - cmd
+- cpu
+- memory
 
 example:
 - sh docker_operation.sh -f demo -t tomcat -c delete,create
@@ -19,6 +22,5 @@ Options for docker_operation.sh
 - -c command: /create/delete/update/start/stop/restart/
 
 Setup your system
-
   vi /etc/sysconfig/docker
   OPTIONS="-H tcp://0.0.0.0:6732 -H unix://var/run/docker.sock"
