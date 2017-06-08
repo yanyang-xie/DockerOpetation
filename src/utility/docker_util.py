@@ -21,7 +21,7 @@ class DockerOperation():
         except:
             print 'Pull image %s from remote with auth_config %s.' %(name, auth_config)
             image = self.client.images.pull(name, auth_config=auth_config)
-            print 'Pull image %s from remote with auth_config %s, succeed. Image info:%s' %(name, auth_config, image)
+            #print 'Pull image %s from remote with auth_config %s, succeed. Image info:%s' %(name, auth_config, image)
     
     def get_container_list(self, all=True, before=None, filters=None, limit=-1, since=None):
         return self.client.containers.list(all, before, filters, limit, since)
@@ -44,12 +44,14 @@ class DockerOperation():
         except:
             return False
     
-    def create_container(self, docker_image, command=None, detach=True, container_name=None, ports={}, volumes={}, cpu_shares=1024, mem_limit='1g', auth_config={}, **kwargs):
+    def create_container(self, docker_image, command=None, detach=True, container_name=None, ports={}, volumes={}, cpu_shares=1024, mem_limit='1g', auth_config={}, extra_hosts={}, environment={}, **kwargs):
         self.pull_image(docker_image, auth_config=auth_config)
         
         # cpu_shares: CPU shares (relative weight). 1024 is 1 core CPU
         # mem_limit(str or int) : Memory limit. Accepts float values or a string with a units identification char (100000b, 1000k, 128m, 1g). If a string is specified without a units character, bytes are assumed as an intended unit.
-        return self.client.containers.run(docker_image, command=command, detach=detach, name=container_name, ports=ports, volumes=volumes, cpu_shares=cpu_shares, mem_limit=mem_limit, **kwargs)
+        # environment: {env1:value_env1, env2:value_env2}
+        # extra_hosts: {}
+        return self.client.containers.run(docker_image, command=command, detach=detach, name=container_name, ports=ports, volumes=volumes, cpu_shares=cpu_shares, mem_limit=mem_limit, extra_hosts=extra_hosts, environment=environment, **kwargs)
     
     def delete_container(self, container):
         container.remove()
