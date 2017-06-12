@@ -58,7 +58,11 @@ def read_config():
     
     global task_name, operator
     config_folder, task_name, operator = sys.argv[1], sys.argv[2], sys.argv[3]
-    config_file = os.path.dirname(os.path.abspath(__file__)) + os.sep + config_folder + os.sep + 'config.properties'
+    
+    if config_folder.find('/') > 0:
+        config_file = os.path.dirname(os.path.abspath(__file__)) + os.sep + config_folder
+    else:
+        config_file = os.path.dirname(os.path.abspath(__file__)) + os.sep + config_folder + os.sep + 'config.properties'
     print 'task:{}, config file:{}'.format(task_name, config_file)
     
     conf = common_util.load_properties(config_file)
@@ -107,26 +111,14 @@ def validate_config(task_conf):
     if image_repository_username is not None and image_repository_password is not None:
         auth_config = {'username': image_repository_username, 'password': image_repository_password}
     
-    #{'8080/tcp': 8090,}
+    #{'8080/tcp': 8090,}. format: ip:hostPort:containerPort
     container_ports_string = common_util.get_config_value_by_key(task_conf, 'container.ports.map')
     container_ports = _convert_to_dict(container_ports_string)
-    container_ports = {'%s/tcp' %(key): int(value) for key, value in container_ports.items()}
-    '''
-    if container_ports_string is not None:
-        for container_ports_map in container_ports_string.split(','):
-            port_list = container_ports_map.split(':')
-            container_ports['%s/tcp' %(port_list[0])] = int(port_list[1])
-    '''
+    container_ports = {'%s/tcp' %(value): int(key) for key, value in container_ports.items()}
         
     container_volumes_string = common_util.get_config_value_by_key(task_conf, 'container.volumes.map')
     container_volumes = _convert_to_dict(container_volumes_string)
     container_volumes = { key: {'bind': value, 'mode': 'rw'}  for key, value in container_volumes.items()}
-    '''
-    if container_volumes_string is not None:
-        for container_volumes_map in container_volumes_string.split(','):
-            volumes_list = container_volumes_map.split(':')
-            container_volumes[volumes_list[0]] = {'bind': '%s' %(volumes_list[1]), 'mode': 'rw'}
-    '''
     
     #{env1:value_env1, env2:value_env2}
     container_env_string = common_util.get_config_value_by_key(task_conf, 'container.env.map')
