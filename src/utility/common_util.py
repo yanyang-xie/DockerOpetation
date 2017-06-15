@@ -16,6 +16,9 @@ def get_config_value_by_key(config_dict, key, default_value=None):
     @return: string
     '''
     value = string.strip(config_dict[key]) if config_dict.has_key(key) else None
+    if value == '':
+        value = None
+    
     if value is None and default_value is not None:
         value = default_value
     return value

@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.split(os.path.realpath(__file__))[0], "..")
 task_name, docker_server_url, image_name, container_name, container_cpu, container_memory = ('','','','', 1024, '1g')
 auth_config, container_ports, container_volumes, container_hosts, container_env = {},{},{},{},{}
 operator = ''
+timeout = 120
 
 def create():
     if docker_operation.exist_container(container_name):
@@ -21,6 +22,8 @@ def create():
     return container
 
 def update():
+    docker_operation.delete_image(image_name)
+    
     delete()
     create()
 
@@ -56,8 +59,11 @@ def read_config():
         print 'Missing required parameters. task, conf folder and operation'
         exit(1)
     
-    global task_name, operator
+    global task_name, operator, timeout
     config_folder, task_name, operator = sys.argv[1], sys.argv[2], sys.argv[3]
+    
+    if len(sys.argv) > 4:
+        timeout = int(sys.argv[4])
     
     if config_folder.find('/') > 0:
         config_file = os.path.dirname(os.path.abspath(__file__)) + os.sep + config_folder
@@ -149,6 +155,6 @@ if __name__ == '__main__':
     validate_config(task_conf)
     print 'Task conf for [%s]: %s | %s | %s | %s | %s | %s | %s | %s | %s | %s' %(task_name, image_name, container_name, container_cpu, container_memory, container_ports, container_volumes, container_hosts, container_env, docker_server_url, auth_config)
     
-    docker_operation = DockerOperation(docker_server_url)
+    docker_operation = DockerOperation(docker_server_url, timeout=timeout)
     eval('%s()' %operator)
     print 'Finished to %s container' %(operator)

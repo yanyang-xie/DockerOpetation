@@ -5,23 +5,40 @@
 #yum install docker
 
 import docker
+from docker.errors import ImageNotFound
 
 class DockerOperation():
     
-    def __init__(self, base_url, version='1.24', timeout=3):
+    def __init__(self, base_url, version='1.24', timeout=120):
         self.client = docker.DockerClient(base_url=base_url, version=version, timeout=timeout,)
         
     def get_image_list(self, name=None, filters=None):
         return self.client.images.list(name, filters=filters)
     
+    def get_image(self, name):
+        return self.client.images.get(name)
+    
+    def delete_image(self, name):
+        try:
+            image = self.client.images.get(name)
+            print 'Found image %s in local, do force delete. Image info:%s' %(name, image)
+            self.client.images.remove(name, force=True)
+            print 'Image %s has been deleted.' %(name)
+        except ImageNotFound:
+            print 'Image %s is not found.' %(name)
+        except Exception, e:
+            print e
+    
     def pull_image(self, name, auth_config={}):
         try:
             image = self.client.images.get(name)
             print 'Found image %s in local, need not pull from remote. Image info:%s' %(name, image)
-        except:
+        except ImageNotFound:
             print 'Pull image %s from remote with auth_config %s.' %(name, auth_config)
             image = self.client.images.pull(name, auth_config=auth_config)
             #print 'Pull image %s from remote with auth_config %s, succeed. Image info:%s' %(name, auth_config, image)
+        except Exception, e:
+            print e
     
     def get_container_list(self, all=True, before=None, filters=None, limit=-1, since=None):
         return self.client.containers.list(all, before, filters, limit, since)
@@ -76,7 +93,7 @@ class DockerOperation():
 
 
 if __name__ == '__main__':
-    docker_operation = DockerOperation('http://52.221.182.216:6732')
+    docker_operation = DockerOperation('http://52.220.102.33:6732')
     
     docker_image='tomcat:8.0'
     container_name = 'tomcat-123456'

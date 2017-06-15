@@ -5,6 +5,7 @@ cmds=""
 config_folder=""
 task_name=""
 sleep_time=5
+timeout=120
 
 operation_file="`(cd "$(dirname "$0")"; pwd)`/docker_operation.py"
 if [ ! -f $operation_file ]; then
@@ -17,12 +18,13 @@ function read_opt() {
 	sleep_time="1s"
 	cmds=""
 	
-	while getopts :f:s:c:t: opt; do
+	while getopts :f:s:c:t:o: opt; do
 	    case $opt in
 	        f) config_folder="$OPTARG" ;;
 	        s) sleep_time="$OPTARG" ;;
 	        c) cmds="$OPTARG" ;;
 	        t) task_name="$OPTARG" ;;
+	        o) timeout="$OPTARG" ;;
 	        \?) echo "Invalid param" ;;
 	    esac
 	done
@@ -30,6 +32,7 @@ function read_opt() {
 	echo "Configuration folder: $config_folder"
 	echo "Task name: $task_name"
 	echo "Command execution time gap:$sleep_time"
+	echo "Command api timeout:$timeout"
 	echo "Command list:$cmds"
 }
 
@@ -41,8 +44,8 @@ function operation(){
 	for cmd in ${cmd_list[@]}
 	do
 	{
-		echo "python ${operation_file} $config_folder $task_name $cmd "
-        python ${operation_file} $config_folder $task_name $cmd
+		echo "python ${operation_file} $config_folder $task_name $cmd $timeout"
+        python ${operation_file} $config_folder $task_name $cmd $timeout
         
         if [[ $? != 0 ]];then
    	    	echo "Operation $cmd failed. ${ret}"
